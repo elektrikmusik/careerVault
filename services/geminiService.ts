@@ -76,8 +76,8 @@ export const parseCareerHistory = async (text: string): Promise<Partial<Experien
       For each experience, extract:
       - Title
       - Company
-      - Start Date
-      - End Date
+      - Start Date (Format: YYYY-MM-DD if possible)
+      - End Date (Format: YYYY-MM-DD or "Present")
       - Raw Description: Include the FULL narrative, bullet points, and specific details associated with that role. Do NOT summarize. Preserve the original detail.
       
       Input Text:

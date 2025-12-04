@@ -268,20 +268,40 @@ const Vault: React.FC<VaultProps> = ({ experiences, setExperiences }) => {
                   </div>
                   <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-2">
-                        <input
-                          type="text"
-                          placeholder="Start Date"
-                          className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                          value={formData.startDate || ''}
-                          onChange={e => setFormData({ ...formData, startDate: e.target.value })}
-                        />
-                        <input
-                          type="text"
-                          placeholder="End Date"
-                          className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                          value={formData.endDate || ''}
-                          onChange={e => setFormData({ ...formData, endDate: e.target.value })}
-                        />
+                        <div className="flex flex-col">
+                            <label className="text-xs font-bold text-slate-500 uppercase mb-1">Start Date</label>
+                            <input
+                              type="date"
+                              className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm"
+                              value={formData.startDate || ''}
+                              onChange={e => setFormData({ ...formData, startDate: e.target.value })}
+                            />
+                        </div>
+                        <div className="flex flex-col">
+                            <label className="text-xs font-bold text-slate-500 uppercase mb-1">End Date</label>
+                            <input
+                              type="date"
+                              className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm disabled:bg-slate-100 disabled:text-slate-400"
+                              value={formData.endDate === 'Present' ? '' : (formData.endDate || '')}
+                              disabled={formData.endDate === 'Present'}
+                              onChange={e => setFormData({ ...formData, endDate: e.target.value })}
+                            />
+                            <div className="flex items-center mt-2">
+                                <input
+                                    type="checkbox"
+                                    id="currentRole"
+                                    checked={formData.endDate === 'Present'}
+                                    onChange={(e) => {
+                                        setFormData({ 
+                                            ...formData, 
+                                            endDate: e.target.checked ? 'Present' : '' 
+                                        });
+                                    }}
+                                    className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                                />
+                                <label htmlFor="currentRole" className="ml-2 text-xs text-slate-600 font-medium cursor-pointer select-none">Current Role</label>
+                            </div>
+                        </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <input
