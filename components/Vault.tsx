@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { Plus, Wand2, Trash2, Save, Briefcase, Upload, X, Loader2, Tag, Building2, Target } from 'lucide-react';
+import { Plus, Wand2, Trash2, Save, Briefcase, Upload, X, Loader2, Tag, Building2, Target, Settings2 } from 'lucide-react';
 import { Experience } from '../types';
-import { enrichExperience, parseCareerHistory } from '../services/geminiService';
+import { enrichExperience, parseCareerHistory, refineBulletPoint } from '../services/geminiService';
 
 interface VaultProps {
   experiences: Experience[];
@@ -14,6 +14,11 @@ const Vault: React.FC<VaultProps> = ({ experiences, setExperiences }) => {
   const [isImporting, setIsImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadMode, setUploadMode] = useState<'create' | 'append'>('create');
+  const [refiningBullets, setRefiningBullets] = useState<number[]>([]);
+  
+  // New State for Refine Menu
+  const [activeRefineMenu, setActiveRefineMenu] = useState<number | null>(null);
+  const [refineOptions, setRefineOptions] = useState({ tone: 'Professional', length: 'Concise' });
 
   // New Experience Form State
   const [formData, setFormData] = useState<Partial<Experience>>({});
@@ -154,12 +159,33 @@ const Vault: React.FC<VaultProps> = ({ experiences, setExperiences }) => {
     setFormData({ ...formData, [field]: newArray });
   };
 
+  const handleRefineSingleBullet = async (index: number) => {
+      const bullets = formData.starBullets || [];
+      const bulletToRefine = bullets[index];
+      if (!bulletToRefine) return;
+
+      // Close menu
+      setActiveRefineMenu(null);
+
+      setRefiningBullets(prev => [...prev, index]);
+      try {
+        const refined = await refineBulletPoint(bulletToRefine, refineOptions);
+        if (refined) {
+            handleArrayChange('starBullets', index, refined);
+        }
+      } catch (error) {
+          console.error("Failed to refine bullet", error);
+      } finally {
+          setRefiningBullets(prev => prev.filter(i => i !== index));
+      }
+  };
+
   // Tags input component
   const TagsInput = ({ label, field, placeholder }: { label: string, field: keyof Experience, placeholder: string }) => (
     <div className="mb-4">
        <div className="flex justify-between items-center mb-2">
           <label className="text-xs uppercase text-slate-500 font-bold">{label}</label>
-          <button onClick={() => addArrayItem(field, placeholder)} className="text-xs text-indigo-600 hover:underline flex items-center">
+          <button onClick={() => addArrayItem(field, placeholder)} className="text-xs text-emerald-600 hover:underline flex items-center">
              <Plus className="w-3 h-3 mr-1" /> Add
           </button>
        </div>
@@ -169,7 +195,7 @@ const Vault: React.FC<VaultProps> = ({ experiences, setExperiences }) => {
               <input
                  value={item}
                  onChange={(e) => handleArrayChange(field, idx, e.target.value)}
-                 className="outline-none bg-transparent min-w-[60px]"
+                 className="outline-none bg-transparent min-w-[60px] text-slate-700"
               />
               <button 
                  onClick={() => removeArrayItem(field, idx)} 
@@ -212,7 +238,7 @@ const Vault: React.FC<VaultProps> = ({ experiences, setExperiences }) => {
           <button 
             onClick={handleCreateNew}
             disabled={isImporting}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center shadow-sm transition-all"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg flex items-center shadow-sm transition-all"
           >
             <Plus className="w-5 h-5 mr-2" />
             Add Experience
@@ -226,11 +252,11 @@ const Vault: React.FC<VaultProps> = ({ experiences, setExperiences }) => {
             <Briefcase className="w-12 h-12 text-slate-300 mx-auto mb-4" />
             <p className="text-slate-500">No experiences added yet.</p>
             <div className="mt-4 space-x-4">
-               <button onClick={handleCreateNew} className="text-indigo-600 font-medium hover:underline">
+               <button onClick={handleCreateNew} className="text-emerald-600 font-medium hover:underline">
                  Add your first role
                </button>
                <span className="text-slate-300">|</span>
-               <button onClick={() => triggerUpload('create')} className="text-indigo-600 font-medium hover:underline">
+               <button onClick={() => triggerUpload('create')} className="text-emerald-600 font-medium hover:underline">
                  Import from file
                </button>
             </div>
@@ -239,86 +265,99 @@ const Vault: React.FC<VaultProps> = ({ experiences, setExperiences }) => {
         
         {isImporting && experiences.length === 0 && (
            <div className="text-center py-12">
-              <Loader2 className="w-8 h-8 text-indigo-600 animate-spin mx-auto mb-2" />
+              <Loader2 className="w-8 h-8 text-emerald-600 animate-spin mx-auto mb-2" />
               <p className="text-slate-500">Analyzing document and extracting roles...</p>
            </div>
         )}
 
         {experiences.map((exp) => (
-          <div key={exp.id} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div key={exp.id} className="bg-white rounded-xl border border-slate-200 shadow-sm">
             {editingId === exp.id ? (
               <div className="p-6 space-y-6 animate-in fade-in duration-200">
-                {/* Header Inputs */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-4">
+                
+                {/* Header Inputs Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  
+                  {/* Row 1: Title & Company */}
+                  <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">Job Title</label>
                       <input
                         type="text"
-                        placeholder="Job Title"
-                        className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-bold text-lg"
+                        placeholder="e.g. Senior Product Manager"
+                        className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none font-bold text-lg bg-white text-slate-900"
                         value={formData.title || ''}
                         onChange={e => setFormData({ ...formData, title: e.target.value })}
                       />
+                  </div>
+                  <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">Company</label>
                       <input
                         type="text"
-                        placeholder="Company"
-                        className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        placeholder="e.g. Acme Corp"
+                        className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none text-lg bg-white text-slate-900"
                         value={formData.company || ''}
                         onChange={e => setFormData({ ...formData, company: e.target.value })}
                       />
                   </div>
-                  <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="flex flex-col">
-                            <label className="text-xs font-bold text-slate-500 uppercase mb-1">Start Date</label>
-                            <input
-                              type="date"
-                              className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm"
-                              value={formData.startDate || ''}
-                              onChange={e => setFormData({ ...formData, startDate: e.target.value })}
-                            />
-                        </div>
-                        <div className="flex flex-col">
-                            <label className="text-xs font-bold text-slate-500 uppercase mb-1">End Date</label>
-                            <input
-                              type="date"
-                              className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm disabled:bg-slate-100 disabled:text-slate-400"
-                              value={formData.endDate === 'Present' ? '' : (formData.endDate || '')}
-                              disabled={formData.endDate === 'Present'}
-                              onChange={e => setFormData({ ...formData, endDate: e.target.value })}
-                            />
-                            <div className="flex items-center mt-2">
-                                <input
-                                    type="checkbox"
-                                    id="currentRole"
-                                    checked={formData.endDate === 'Present'}
-                                    onChange={(e) => {
-                                        setFormData({ 
-                                            ...formData, 
-                                            endDate: e.target.checked ? 'Present' : '' 
-                                        });
-                                    }}
-                                    className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
-                                />
-                                <label htmlFor="currentRole" className="ml-2 text-xs text-slate-600 font-medium cursor-pointer select-none">Current Role</label>
-                            </div>
-                        </div>
+
+                  {/* Row 2: Dates */}
+                  <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">Start Date</label>
+                      <input
+                        type="date"
+                        className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm bg-white text-slate-900"
+                        value={formData.startDate || ''}
+                        onChange={e => setFormData({ ...formData, startDate: e.target.value })}
+                      />
+                  </div>
+                  <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase">End Date</label>
+                      <div className="flex items-center gap-3">
+                          <input
+                            type="date"
+                            className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm disabled:bg-slate-100 disabled:text-slate-400 bg-white text-slate-900"
+                            value={formData.endDate === 'Present' ? '' : (formData.endDate || '')}
+                            disabled={formData.endDate === 'Present'}
+                            onChange={e => setFormData({ ...formData, endDate: e.target.value })}
+                          />
+                          <div className="flex items-center shrink-0">
+                              <input
+                                  type="checkbox"
+                                  id={`currentRole-${exp.id}`}
+                                  checked={formData.endDate === 'Present'}
+                                  onChange={(e) => {
+                                      setFormData({ 
+                                          ...formData, 
+                                          endDate: e.target.checked ? 'Present' : '' 
+                                      });
+                                  }}
+                                  className="w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500 cursor-pointer"
+                              />
+                              <label htmlFor={`currentRole-${exp.id}`} className="ml-2 text-xs text-slate-600 font-medium cursor-pointer select-none">Current</label>
+                          </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <input
-                          type="text"
-                          placeholder="Industry (e.g. Fintech)"
-                          className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm"
-                          value={formData.industry || ''}
-                          onChange={e => setFormData({ ...formData, industry: e.target.value })}
-                        />
-                        <input
-                          type="text"
-                          placeholder="Sector (e.g. SaaS)"
-                          className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm"
-                          value={formData.sector || ''}
-                          onChange={e => setFormData({ ...formData, sector: e.target.value })}
-                        />
-                      </div>
+                  </div>
+
+                  {/* Row 3: Industry & Sector */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-500 uppercase">Industry</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Fintech"
+                      className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm bg-white text-slate-900"
+                      value={formData.industry || ''}
+                      onChange={e => setFormData({ ...formData, industry: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-500 uppercase">Sector</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. SaaS"
+                      className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm bg-white text-slate-900"
+                      value={formData.sector || ''}
+                      onChange={e => setFormData({ ...formData, sector: e.target.value })}
+                    />
                   </div>
                 </div>
                 
@@ -328,14 +367,14 @@ const Vault: React.FC<VaultProps> = ({ experiences, setExperiences }) => {
                     <label className="block text-xs font-medium text-slate-500 uppercase">
                       Raw Description (Source Material)
                     </label>
-                    <button onClick={() => triggerUpload('append')} className="text-xs text-indigo-600 hover:underline">
+                    <button onClick={() => triggerUpload('append')} className="text-xs text-emerald-600 hover:underline">
                       Append from file
                     </button>
                   </div>
                   <textarea
                     rows={4}
                     placeholder="# Experience at Company... "
-                    className="w-full p-3 border border-slate-700 bg-slate-900 text-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono text-xs"
+                    className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none font-mono text-xs text-slate-900 bg-white"
                     value={formData.rawDescription || ''}
                     onChange={e => setFormData({ ...formData, rawDescription: e.target.value })}
                   />
@@ -344,7 +383,7 @@ const Vault: React.FC<VaultProps> = ({ experiences, setExperiences }) => {
                 {/* AI Structured Fields */}
                 <div className="bg-slate-50 p-5 rounded-lg border border-slate-200">
                     <h4 className="text-sm font-bold text-slate-700 mb-4 flex items-center">
-                       <Wand2 className="w-4 h-4 mr-2 text-indigo-500"/> AI Structured Data
+                       <Wand2 className="w-4 h-4 mr-2 text-emerald-500"/> AI Structured Data
                     </h4>
 
                     {/* About Company */}
@@ -352,7 +391,7 @@ const Vault: React.FC<VaultProps> = ({ experiences, setExperiences }) => {
                        <label className="text-xs uppercase text-slate-500 font-bold block mb-2">About Company</label>
                        <textarea
                          rows={2}
-                         className="w-full p-2 border border-slate-300 rounded-lg text-sm"
+                         className="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white text-slate-900 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
                          value={formData.aboutCompany || ''}
                          onChange={e => setFormData({ ...formData, aboutCompany: e.target.value })}
                          placeholder="Brief company description..."
@@ -374,25 +413,83 @@ const Vault: React.FC<VaultProps> = ({ experiences, setExperiences }) => {
                     <div className="mt-6">
                         <div className="flex justify-between items-center mb-2">
                            <label className="text-xs uppercase text-slate-500 font-bold">STAR Bullets (Synthetic)</label>
-                           <button onClick={() => addArrayItem('starBullets', 'New bullet')} className="text-xs text-indigo-600 hover:underline flex items-center">
+                           <button onClick={() => addArrayItem('starBullets', 'New bullet')} className="text-xs text-emerald-600 hover:underline flex items-center">
                               <Plus className="w-3 h-3 mr-1" /> Add Bullet
                            </button>
                         </div>
                         <div className="space-y-2">
                            {(formData.starBullets || []).map((bullet, idx) => (
-                               <div key={idx} className="flex gap-2 items-start group">
+                               <div key={idx} className="flex gap-2 items-start group relative">
                                   <textarea
                                       value={bullet}
                                       onChange={(e) => handleArrayChange('starBullets', idx, e.target.value)}
                                       rows={2}
-                                      className="w-full p-2 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500 outline-none resize-none"
+                                      className="w-full p-2 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-emerald-500 outline-none resize-none bg-white text-slate-900"
                                   />
+                                  
+                                  {/* Refine Trigger */}
+                                  <button
+                                      onClick={() => setActiveRefineMenu(activeRefineMenu === idx ? null : idx)}
+                                      className={`p-2 text-emerald-600 hover:bg-emerald-50 rounded ${activeRefineMenu === idx ? 'bg-emerald-50' : ''}`}
+                                      disabled={refiningBullets.includes(idx)}
+                                      title="Refine Options"
+                                  >
+                                      <Wand2 className={`w-4 h-4 ${refiningBullets.includes(idx) ? 'animate-spin' : ''}`} />
+                                  </button>
+                                  
                                   <button 
                                       onClick={() => removeArrayItem('starBullets', idx)}
-                                      className="p-1 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      className="p-2 text-slate-400 hover:text-red-500"
+                                      title="Remove bullet"
                                   >
                                       <X className="w-4 h-4" />
                                   </button>
+
+                                  {/* Refinement Context Menu */}
+                                  {activeRefineMenu === idx && (
+                                      <div className="absolute right-0 top-10 z-20 bg-white border border-slate-200 shadow-xl rounded-lg p-4 w-64 animate-in fade-in zoom-in-95">
+                                          <h4 className="text-xs font-bold text-slate-500 uppercase mb-3 flex items-center">
+                                              <Settings2 className="w-3 h-3 mr-1.5"/> Refine Options
+                                          </h4>
+                                          
+                                          <div className="space-y-3">
+                                              <div>
+                                                  <label className="text-xs font-medium text-slate-700 block mb-1">Tone</label>
+                                                  <select 
+                                                      value={refineOptions.tone}
+                                                      onChange={(e) => setRefineOptions({...refineOptions, tone: e.target.value})}
+                                                      className="w-full text-xs p-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-emerald-500 bg-white text-slate-900"
+                                                  >
+                                                      <option value="Professional">Professional (Default)</option>
+                                                      <option value="Executive">Executive</option>
+                                                      <option value="Confident">Confident</option>
+                                                      <option value="Technical">Technical</option>
+                                                  </select>
+                                              </div>
+                                              
+                                              <div>
+                                                  <label className="text-xs font-medium text-slate-700 block mb-1">Length</label>
+                                                  <select 
+                                                      value={refineOptions.length}
+                                                      onChange={(e) => setRefineOptions({...refineOptions, length: e.target.value})}
+                                                      className="w-full text-xs p-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-emerald-500 bg-white text-slate-900"
+                                                  >
+                                                      <option value="Concise">Concise (1 sentence)</option>
+                                                      <option value="Standard">Standard (2 sentences)</option>
+                                                      <option value="Detailed">Detailed</option>
+                                                  </select>
+                                              </div>
+
+                                              <button 
+                                                  onClick={() => handleRefineSingleBullet(idx)}
+                                                  className="w-full bg-emerald-600 text-white text-xs font-bold py-2 rounded hover:bg-emerald-700 flex items-center justify-center"
+                                              >
+                                                  <Wand2 className="w-3 h-3 mr-1.5" />
+                                                  Apply Refinement
+                                              </button>
+                                          </div>
+                                      </div>
+                                  )}
                                </div>
                            ))}
                            {(!formData.starBullets || formData.starBullets.length === 0) && (
@@ -406,7 +503,7 @@ const Vault: React.FC<VaultProps> = ({ experiences, setExperiences }) => {
                    <button
                     onClick={() => handleAIProcess(exp.id)}
                     disabled={isProcessing}
-                    className="flex items-center text-indigo-600 hover:bg-indigo-50 px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
+                    className="flex items-center text-emerald-600 hover:bg-emerald-50 px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
                   >
                     <Wand2 className={`w-4 h-4 mr-2 ${isProcessing ? 'animate-spin' : ''}`} />
                     {isProcessing ? 'Refining...' : 'AI Refine & Extract'}
@@ -460,7 +557,7 @@ const Vault: React.FC<VaultProps> = ({ experiences, setExperiences }) => {
                  {/* Quick Tags View */}
                  <div className="mt-3 flex flex-wrap gap-2">
                     {exp.products?.slice(0,3).map((p, i) => (
-                       <span key={i} className="text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded-full flex items-center">
+                       <span key={i} className="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full flex items-center">
                           <Target className="w-3 h-3 mr-1"/> {p}
                        </span>
                     ))}

@@ -118,13 +118,13 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobs, setJobs, experiences }) => 
            <input 
              value={jobTitle} 
              onChange={(e) => { setJobTitle(e.target.value); updateJob({ title: e.target.value })}}
-             className="text-3xl font-bold text-slate-900 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 outline-none w-full placeholder-slate-400"
+             className="text-3xl font-bold text-slate-900 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-emerald-500 outline-none w-full placeholder-slate-400"
              placeholder="Job Title"
            />
            <input 
              value={jobCompany} 
              onChange={(e) => { setJobCompany(e.target.value); updateJob({ company: e.target.value })}}
-             className="text-xl text-slate-500 mt-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 outline-none w-full placeholder-slate-400"
+             className="text-xl text-slate-500 mt-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-emerald-500 outline-none w-full placeholder-slate-400"
              placeholder="Company Name"
            />
            
@@ -134,7 +134,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobs, setJobs, experiences }) => 
                  <input 
                    value={jobIndustry}
                    onChange={(e) => { setJobIndustry(e.target.value); updateJob({ industry: e.target.value })}}
-                   className="pl-6 py-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 outline-none text-sm text-slate-600 placeholder-slate-400"
+                   className="pl-6 py-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-emerald-500 outline-none text-sm text-slate-600 placeholder-slate-400"
                    placeholder="Industry"
                  />
               </div>
@@ -143,7 +143,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobs, setJobs, experiences }) => 
                  <input 
                    value={jobType}
                    onChange={(e) => { setJobType(e.target.value); updateJob({ jobType: e.target.value })}}
-                   className="pl-6 py-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 outline-none text-sm text-slate-600 placeholder-slate-400"
+                   className="pl-6 py-1 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-emerald-500 outline-none text-sm text-slate-600 placeholder-slate-400"
                    placeholder="Job Type"
                  />
               </div>
@@ -153,12 +153,12 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobs, setJobs, experiences }) => 
              <select 
                 value={job.status}
                 onChange={(e) => updateJob({ status: e.target.value as ApplicationStatus })}
-                className="bg-white border border-slate-300 text-slate-700 text-sm rounded-lg p-2.5 focus:ring-indigo-500 focus:border-indigo-500"
+                className="bg-white border border-slate-300 text-slate-700 text-sm rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500"
              >
                 {Object.values(ApplicationStatus).map(s => <option key={s} value={s}>{s}</option>)}
              </select>
              {job.url && (
-               <a href={job.url} target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline text-sm">
+               <a href={job.url} target="_blank" rel="noreferrer" className="text-emerald-600 hover:underline text-sm">
                  View Original Post
                </a>
              )}
@@ -171,7 +171,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobs, setJobs, experiences }) => 
             <button 
               onClick={handleRunFitAnalysis}
               disabled={isAnalyzing}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center justify-center w-full md:w-auto"
+              className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 flex items-center justify-center w-full md:w-auto"
             >
               {isAnalyzing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Wand2 className="w-4 h-4 mr-2" />}
               Analyze Fit
@@ -193,7 +193,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobs, setJobs, experiences }) => 
                     <ResponsiveContainer width="100%" height="100%">
                       <RadialBarChart innerRadius="80%" outerRadius="100%" barSize={10} data={scoreData} startAngle={90} endAngle={-270}>
                         <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
-                        <RadialBar background dataKey="value" fill={job.fitAnalysis.score > 70 ? '#4f46e5' : '#eab308'} />
+                        <RadialBar background dataKey="value" fill={job.fitAnalysis.score > 70 ? '#10b981' : '#eab308'} />
                       </RadialBarChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex items-center justify-center flex-col">
@@ -223,11 +223,11 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobs, setJobs, experiences }) => 
                         </div>
                      </div>
                      {job.fitAnalysis.recommendedActions && (
-                        <div className="bg-indigo-50 p-3 rounded-lg border border-indigo-100">
-                           <h4 className="text-indigo-800 font-semibold text-sm mb-2 flex items-center">
+                        <div className="bg-emerald-50 p-3 rounded-lg border border-emerald-100">
+                           <h4 className="text-emerald-800 font-semibold text-sm mb-2 flex items-center">
                              <Activity className="w-4 h-4 mr-1.5" /> Recommended Actions
                            </h4>
-                           <ul className="text-sm text-indigo-700 space-y-1">
+                           <ul className="text-sm text-emerald-700 space-y-1">
                              {job.fitAnalysis.recommendedActions.map((s, i) => <li key={i}>• {s}</li>)}
                            </ul>
                         </div>
@@ -257,7 +257,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobs, setJobs, experiences }) => 
                         <button 
                            onClick={handleCheckATS}
                            disabled={isCheckingATS}
-                           className="text-xs bg-indigo-50 border border-indigo-200 text-indigo-700 px-3 py-1.5 rounded-md hover:bg-indigo-100 transition-colors flex items-center"
+                           className="text-xs bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-1.5 rounded-md hover:bg-emerald-100 transition-colors flex items-center"
                         >
                            {isCheckingATS ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <SearchCheck className="w-3 h-3 mr-1" />}
                            Check ATS
@@ -387,7 +387,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobs, setJobs, experiences }) => 
                      <span className="text-xs uppercase text-slate-500 font-bold block mb-1">Required Skills</span>
                      <div className="flex flex-wrap gap-1.5">
                        {job.structuredData.skills.map((s, i) => (
-                         <span key={i} className="text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded">{s}</span>
+                         <span key={i} className="text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded">{s}</span>
                        ))}
                      </div>
                    </div>

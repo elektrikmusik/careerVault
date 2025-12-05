@@ -156,6 +156,36 @@ export const enrichExperience = async (rawText: string): Promise<Partial<Experie
   }
 };
 
+export const refineBulletPoint = async (text: string, options?: { tone?: string, length?: string }): Promise<string> => {
+  const tone = options?.tone || 'Professional';
+  const length = options?.length || 'Concise';
+  
+  try {
+    const response = await ai.models.generateContent({
+      model: FAST_MODEL,
+      contents: `Rewrite this resume bullet point to be more professional, impactful, and result-oriented using the STAR method.
+      
+      STRICT STRUCTURE RULE:
+      The output MUST follow one of these two patterns:
+      1. Action Verb + Task or Project + Metric or Result
+      2. Action Verb + Metric or Result + Task or Project
+      
+      Tone: ${tone}.
+      Length: ${length}.
+      Use strong action verbs. Avoid banned words.
+      
+      Bullet: "${text}"`,
+      config: {
+        systemInstruction: BANNED_WORDS_INSTRUCTION,
+      }
+    });
+    return response.text?.trim() || text;
+  } catch (error) {
+    console.error("Error refining bullet:", error);
+    return text;
+  }
+};
+
 // Deprecated: kept for compatibility if needed, but enrichedExperience covers it.
 export const reformulateExperience = async (rawText: string): Promise<string[]> => {
   const result = await enrichExperience(rawText);

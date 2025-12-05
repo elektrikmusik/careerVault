@@ -100,7 +100,7 @@ const ChatBot: React.FC = () => {
       <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
         <div>
           <h2 className="text-lg font-bold text-slate-900 flex items-center">
-            <Bot className="w-5 h-5 mr-2 text-indigo-600" />
+            <Bot className="w-5 h-5 mr-2 text-emerald-600" />
             Career Assistant
           </h2>
           <p className="text-sm text-slate-500">Powered by Gemini Pro</p>
@@ -122,13 +122,13 @@ const ChatBot: React.FC = () => {
           >
             <div className={`flex max-w-[80%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mx-2 ${
-                msg.role === 'user' ? 'bg-indigo-600' : 'bg-green-600'
+                msg.role === 'user' ? 'bg-emerald-600' : 'bg-green-600'
               }`}>
                 {msg.role === 'user' ? <User className="w-5 h-5 text-white" /> : <Bot className="w-5 h-5 text-white" />}
               </div>
               <div className={`p-4 rounded-2xl ${
                 msg.role === 'user' 
-                  ? 'bg-indigo-600 text-white rounded-tr-none' 
+                  ? 'bg-emerald-600 text-white rounded-tr-none' 
                   : 'bg-slate-100 text-slate-800 rounded-tl-none'
               }`}>
                 <div className="prose prose-sm max-w-none dark:prose-invert">
@@ -160,13 +160,13 @@ const ChatBot: React.FC = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask for interview advice, or help negotiating..."
-            className="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+            className="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
             disabled={isLoading}
           />
           <button 
             type="submit" 
             disabled={isLoading || !input.trim()}
-            className="bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+            className="bg-emerald-600 text-white p-3 rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors"
           >
             <Send className="w-5 h-5" />
           </button>

@@ -18,7 +18,7 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon: Icon, label, active }) => (
     to={to}
     className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
       active 
-        ? 'bg-indigo-600 text-white shadow-md' 
+        ? 'bg-emerald-600 text-white shadow-md' 
         : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
     }`}
   >
@@ -55,7 +55,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       >
         <div className="flex items-center justify-between h-16 px-6 border-b border-slate-100">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
               <FileText className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-bold text-slate-900">CareerFlow</span>
