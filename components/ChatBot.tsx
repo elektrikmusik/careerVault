@@ -3,10 +3,11 @@ import { Send, User, Bot, Loader2, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Message } from '../types';
 import { streamChatMessage } from '../services/geminiService';
-import { useLocalStorage } from '../hooks';
+import { usePersistentData } from '../hooks';
 
 const ChatBot: React.FC = () => {
-  const [messages, setMessages] = useLocalStorage<Message[]>('chat_history', [
+  // Synced with Supabase table 'messages'
+  const [messages, setMessages] = usePersistentData<Message>('chat_history', [
     {
       id: '1',
       role: 'model',

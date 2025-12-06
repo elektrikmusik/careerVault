@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Search, MapPin, Building, ChevronRight, Loader2, Briefcase, Filter, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Job, ApplicationStatus } from '../types';
-import { analyzeJobDescription } from '../services/geminiService';
+import { analyzeJobDescription } from '../services/jobService';
 
 interface JobTrackerProps {
   jobs: Job[];

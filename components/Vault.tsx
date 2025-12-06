@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Plus, Wand2, Trash2, Save, Briefcase, Upload, X, Loader2, Tag, Building2, Target, Settings2 } from 'lucide-react';
 import { Experience } from '../types';
-import { enrichExperience, parseCareerHistory, refineBulletPoint } from '../services/geminiService';
+import { enrichExperience, parseCareerHistory, refineBulletPoint } from '../services/experienceService';
 
 interface VaultProps {
   experiences: Experience[];

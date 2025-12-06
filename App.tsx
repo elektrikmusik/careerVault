@@ -5,13 +5,14 @@ import Vault from './components/Vault';
 import JobTracker from './components/JobTracker';
 import JobDetail from './components/JobDetail';
 import ChatBot from './components/ChatBot';
+import Settings from './components/Settings';
 import { Experience, Job } from './types';
-import { useLocalStorage } from './hooks';
+import { usePersistentData } from './hooks';
 
 const App: React.FC = () => {
-  // Global State for Core Data
-  const [experiences, setExperiences] = useLocalStorage<Experience[]>('career_experiences', []);
-  const [jobs, setJobs] = useLocalStorage<Job[]>('career_jobs', []);
+  // Global State for Core Data - Synced with Supabase tables 'experiences' and 'jobs'
+  const [experiences, setExperiences] = usePersistentData<Experience>('career_experiences', []);
+  const [jobs, setJobs] = usePersistentData<Job>('career_jobs', []);
 
   // Check API Key
   if (!process.env.API_KEY) {
@@ -65,6 +66,7 @@ const App: React.FC = () => {
           />
           
           <Route path="/chat" element={<ChatBot />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </Layout>
     </HashRouter>

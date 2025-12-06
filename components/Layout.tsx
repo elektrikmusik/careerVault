@@ -1,5 +1,5 @@
 import React from 'react';
-import { Briefcase, FileText, LayoutDashboard, MessageSquare, Menu, X } from 'lucide-react';
+import { Briefcase, FileText, LayoutDashboard, MessageSquare, Menu, X, Settings } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 interface LayoutProps {
@@ -35,6 +35,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/vault', label: 'Career Vault', icon: Briefcase },
     { path: '/jobs', label: 'Applications', icon: LayoutDashboard },
     { path: '/chat', label: 'AI Assistant', icon: MessageSquare },
+    { path: '/settings', label: 'Settings', icon: Settings },
   ];
 
   return (

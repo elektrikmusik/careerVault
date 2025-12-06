@@ -4,7 +4,7 @@ import { ArrowLeft, CheckCircle2, AlertCircle, FileText, Wand2, Loader2, Save, A
 import { RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis } from 'recharts';
 import ReactMarkdown from 'react-markdown';
 import { Job, Experience, FitAnalysisResult, ApplicationStatus } from '../types';
-import { calculateFit, generateResume, generateCoverLetter, validateResumeATS } from '../services/geminiService';
+import { calculateFit, generateResume, generateCoverLetter, validateResumeATS } from '../services/matchingService';
 
 interface JobDetailProps {
   jobs: Job[];
